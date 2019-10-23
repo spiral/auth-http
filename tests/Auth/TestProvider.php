@@ -18,7 +18,7 @@ class TestProvider implements ActorProviderInterface
 {
     public function getActor(TokenInterface $token): ?object
     {
-        if ($token->getPayload()['ok']) {
+        if ($token->getID() === 'ok') {
             return new \stdClass();
         }
 
