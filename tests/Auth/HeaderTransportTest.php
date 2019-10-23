@@ -38,12 +38,12 @@ class HeaderTransportTest extends TestCase
         $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
 
         $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
-            if ($request->getAttribute('auth-context')->getToken() === null) {
+            if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             } else {
-                echo $request->getAttribute('auth-context')->getToken()->getID();
+                echo $request->getAttribute('authContext')->getToken()->getID();
                 echo ':';
-                echo json_encode($request->getAttribute('auth-context')->getToken()->getPayload());
+                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
             }
         });
 
@@ -60,12 +60,12 @@ class HeaderTransportTest extends TestCase
         $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
 
         $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
-            if ($request->getAttribute('auth-context')->getToken() === null) {
+            if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             } else {
-                echo $request->getAttribute('auth-context')->getToken()->getID();
+                echo $request->getAttribute('authContext')->getToken()->getID();
                 echo ':';
-                echo json_encode($request->getAttribute('auth-context')->getToken()->getPayload());
+                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
             }
         });
 
@@ -75,6 +75,23 @@ class HeaderTransportTest extends TestCase
 
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame('no token', (string)$response->getBody());
+    }
+
+    public function testDeleteToken()
+    {
+        $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
+
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+            $request->getAttribute('authContext')->close();
+            echo 'closed';
+        });
+
+        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
+            'X-Auth-Token' => 'bad'
+        ]));
+
+        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        $this->assertSame('closed', (string)$response->getBody());
     }
 
     protected function getCore(HttpTransportInterface $transport): Http

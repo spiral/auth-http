@@ -27,7 +27,7 @@ use Spiral\Core\ScopeInterface;
  */
 final class AuthMiddleware implements MiddlewareInterface
 {
-    public const ATTRIBUTE = 'auth-context';
+    public const ATTRIBUTE = 'authContext';
 
     /** @var ScopeInterface */
     private $scope;
@@ -121,6 +121,7 @@ final class AuthMiddleware implements MiddlewareInterface
         $transport = $this->transportRegistry->getTransport($authContext->getTransport());
 
         if ($authContext->isClosed()) {
+
             return $transport->removeToken(
                 $request,
                 $response,

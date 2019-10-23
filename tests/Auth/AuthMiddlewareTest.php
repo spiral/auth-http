@@ -46,7 +46,7 @@ class AuthMiddlewareTest extends TestCase
 
         $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
             $response->getBody()->write(
-                get_class($request->getAttribute('auth-context'))
+                get_class($request->getAttribute('authContext'))
             );
         });
 
@@ -69,7 +69,7 @@ class AuthMiddlewareTest extends TestCase
         );
 
         $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
-            if ($request->getAttribute('auth-context')->getToken() === null) {
+            if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             }
         });
