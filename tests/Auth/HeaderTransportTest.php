@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
-
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -27,17 +28,16 @@ class HeaderTransportTest extends TestCase
 {
     private $container;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
-
     }
 
-    public function testHeaderToken()
+    public function testHeaderToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
+        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             } else {
@@ -55,11 +55,11 @@ class HeaderTransportTest extends TestCase
         $this->assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
     }
 
-    public function testBadHeaderToken()
+    public function testBadHeaderToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
+        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             } else {
@@ -77,11 +77,11 @@ class HeaderTransportTest extends TestCase
         $this->assertSame('no token', (string)$response->getBody());
     }
 
-    public function testDeleteToken()
+    public function testDeleteToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Middleware\Transport\HeaderTransport());
+        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             $request->getAttribute('authContext')->close();
             echo 'closed';
         });
@@ -92,6 +92,21 @@ class HeaderTransportTest extends TestCase
 
         $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         $this->assertSame('closed', (string)$response->getBody());
+    }
+
+    public function testCommitToken(): void
+    {
+        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
+
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
+            $request->getAttribute('authContext')->start(
+                new TestToken('new-token', ['ok' => 1])
+            );
+        });
+
+        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
+
+        $this->assertSame(['new-token'], $response->getHeader('X-Auth-Token'));
     }
 
     protected function getCore(HttpTransportInterface $transport): Http
@@ -119,6 +134,8 @@ class HeaderTransportTest extends TestCase
                 $reg = new TransportRegistry()
             )
         );
+
+        $reg->setDefaultTransport('transport');
         $reg->setTransport('transport', $transport);
 
         return $http;

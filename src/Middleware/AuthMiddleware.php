@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Auth\Middleware;
@@ -114,14 +116,13 @@ final class AuthMiddleware implements MiddlewareInterface
      */
     private function closeContext(Request $request, Response $response, AuthContextInterface $authContext): Response
     {
-        if ($authContext->getTransport() === null) {
+        if ($authContext->getToken() === null) {
             return $response;
         }
 
         $transport = $this->transportRegistry->getTransport($authContext->getTransport());
 
         if ($authContext->isClosed()) {
-
             return $transport->removeToken(
                 $request,
                 $response,

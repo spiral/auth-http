@@ -1,13 +1,15 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
-namespace Spiral\Auth\Middleware\Transport;
+namespace Spiral\Auth\Transport;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -50,7 +52,7 @@ final class HeaderTransport implements HttpTransportInterface
         string $tokenID,
         \DateTimeInterface $expiresAt = null
     ): Response {
-        if ($request->hasHeader($this->header)) {
+        if ($request->hasHeader($this->header) && $request->getHeaderLine($this->header) === $tokenID) {
             return $response;
         }
 

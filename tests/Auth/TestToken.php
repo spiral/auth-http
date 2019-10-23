@@ -59,6 +59,4 @@ class TestToken implements TokenInterface
     {
         return $this->payload;
     }
-
-
 }

@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
@@ -31,20 +33,19 @@ class FirewallTest extends TestCase
 {
     private $container;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
-
     }
 
-    public function testExceptionOK()
+    public function testExceptionOK(): void
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException()),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo 'OK';
         });
 
@@ -55,14 +56,14 @@ class FirewallTest extends TestCase
         $this->assertSame('OK', (string)$response->getBody());
     }
 
-    public function testNoActorException()
+    public function testNoActorException(): void
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException('no user')),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo 'OK';
         });
 
@@ -74,14 +75,14 @@ class FirewallTest extends TestCase
         $this->assertSame('OK', (string)$response->getBody());
     }
 
-    public function testBadTokenException()
+    public function testBadTokenException(): void
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException('no user')),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo 'OK';
         });
 
@@ -93,14 +94,14 @@ class FirewallTest extends TestCase
         $this->assertSame('OK', (string)$response->getBody());
     }
 
-    public function testOverwriteOK()
+    public function testOverwriteOK(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo $request->getUri();
         });
 
@@ -111,14 +112,14 @@ class FirewallTest extends TestCase
         $this->assertSame('/admin', (string)$response->getBody());
     }
 
-    public function testNoActorOverwrite()
+    public function testNoActorOverwrite(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo $request->getUri();
         });
 
@@ -129,14 +130,14 @@ class FirewallTest extends TestCase
         $this->assertSame('/login', (string)$response->getBody());
     }
 
-    public function testBadTokenOverwrite()
+    public function testBadTokenOverwrite(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Middleware\Transport\HeaderTransport()
+            new \Spiral\Auth\Transport\HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             echo $request->getUri();
         });
 
@@ -178,5 +179,4 @@ class FirewallTest extends TestCase
 
         return $http;
     }
-
 }

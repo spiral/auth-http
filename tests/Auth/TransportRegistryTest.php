@@ -1,22 +1,24 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
 
 use PHPUnit\Framework\TestCase;
 use Spiral\Auth\Exception\TransportException;
-use Spiral\Auth\Middleware\Transport\CookieTransport;
+use Spiral\Auth\Transport\CookieTransport;
 use Spiral\Auth\TransportRegistry;
 
 class TransportRegistryTest extends TestCase
 {
-    public function testGetTransports()
+    public function testGetTransports(): void
     {
         $t = new TransportRegistry();
         $t->setTransport('cookie', new CookieTransport('auth-token'));
@@ -25,7 +27,7 @@ class TransportRegistryTest extends TestCase
         $this->assertInstanceOf(CookieTransport::class, $t->getTransport('cookie'));
     }
 
-    public function testGetException()
+    public function testGetException(): void
     {
         $t = new TransportRegistry();
 

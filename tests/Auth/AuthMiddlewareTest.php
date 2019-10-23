@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
@@ -26,13 +28,12 @@ class AuthMiddlewareTest extends TestCase
 {
     private $container;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->container = new Container();
-
     }
 
-    public function testAttributeRead()
+    public function testAttributeRead(): void
     {
         $http = $this->getCore([]);
         $http->getPipeline()->pushMiddleware(
@@ -44,7 +45,7 @@ class AuthMiddlewareTest extends TestCase
             )
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             $response->getBody()->write(
                 get_class($request->getAttribute('authContext'))
             );
@@ -56,7 +57,7 @@ class AuthMiddlewareTest extends TestCase
         $this->assertSame(AuthContext::class, (string)$response->getBody());
     }
 
-    public function testNoToken()
+    public function testNoToken(): void
     {
         $http = $this->getCore([]);
         $http->getPipeline()->pushMiddleware(
@@ -68,7 +69,7 @@ class AuthMiddlewareTest extends TestCase
             )
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response) {
+        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
             if ($request->getAttribute('authContext')->getToken() === null) {
                 echo 'no token';
             }
