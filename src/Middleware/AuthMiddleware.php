@@ -123,6 +123,8 @@ final class AuthMiddleware implements MiddlewareInterface
         $transport = $this->transportRegistry->getTransport($authContext->getTransport());
 
         if ($authContext->isClosed()) {
+            $this->tokenStorage->delete($authContext->getToken());
+
             return $transport->removeToken(
                 $request,
                 $response,
