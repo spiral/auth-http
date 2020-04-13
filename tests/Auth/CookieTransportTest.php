@@ -91,7 +91,7 @@ class CookieTransportTest extends TestCase
             'auth-token' => 'good-token'
         ]));
 
-        $this->assertSame(['auth-token=; HttpOnly'], $response->getHeader('Set-Cookie'));
+        $this->assertSame(['auth-token=; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
         $this->assertSame('closed', (string)$response->getBody());
     }
 
@@ -107,7 +107,7 @@ class CookieTransportTest extends TestCase
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
 
-        $this->assertSame(['auth-token=new-token; HttpOnly'], $response->getHeader('Set-Cookie'));
+        $this->assertSame(['auth-token=new-token; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
     }
 
     public function testCommitTokenLifetime(): void
