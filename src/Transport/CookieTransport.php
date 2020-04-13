@@ -25,12 +25,17 @@ final class CookieTransport implements HttpTransportInterface
     /** @var string */
     private $cookie;
 
+    /** @var string */
+    private $basePath;
+
     /**
      * @param string $cookie
+     * @param string $basePath
      */
-    public function __construct(string $cookie)
+    public function __construct(string $cookie, string $basePath = '/')
     {
         $this->cookie = $cookie;
+        $this->basePath = $basePath;
     }
 
     /**
@@ -60,14 +65,14 @@ final class CookieTransport implements HttpTransportInterface
         if ($cookieQueue === null) {
             return $response->withAddedHeader(
                 'Set-Cookie',
-                Cookie::create($this->cookie, $tokenID, $this->getLifetime($expiresAt))->createHeader()
+                Cookie::create($this->cookie, $tokenID, $this->getLifetime($expiresAt), $this->basePath)->createHeader()
             );
         }
 
         if ($tokenID === null) {
             $cookieQueue->delete($this->cookie);
         } else {
-            $cookieQueue->set($this->cookie, $tokenID, $this->getLifetime($expiresAt));
+            $cookieQueue->set($this->cookie, $tokenID, $this->getLifetime($expiresAt), $this->basePath);
         }
 
         return $response;
