@@ -18,7 +18,7 @@ class TestStorage implements TokenStorageInterface
 {
     public function load(string $id): ?TokenInterface
     {
-        if ($id == 'bad') {
+        if ($id === 'bad') {
             return null;
         }
 

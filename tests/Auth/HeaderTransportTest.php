@@ -16,6 +16,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Auth\HttpTransportInterface;
 use Spiral\Auth\Middleware\AuthMiddleware;
+use Spiral\Auth\Transport\HeaderTransport;
 use Spiral\Auth\TransportRegistry;
 use Spiral\Core\Container;
 use Spiral\Http\Config\HttpConfig;
@@ -35,78 +36,85 @@ class HeaderTransportTest extends TestCase
 
     public function testHeaderToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
+        $http = $this->getCore(new HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            if ($request->getAttribute('authContext')->getToken() === null) {
-                echo 'no token';
-            } else {
-                echo $request->getAttribute('authContext')->getToken()->getID();
-                echo ':';
-                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                if ($request->getAttribute('authContext')->getToken() === null) {
+                    echo 'no token';
+                } else {
+                    echo $request->getAttribute('authContext')->getToken()->getID();
+                    echo ':';
+                    echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+                }
             }
-        });
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'good-token'
         ]));
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
     }
 
     public function testBadHeaderToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
+        $http = $this->getCore(new HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            if ($request->getAttribute('authContext')->getToken() === null) {
-                echo 'no token';
-            } else {
-                echo $request->getAttribute('authContext')->getToken()->getID();
-                echo ':';
-                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                if ($request->getAttribute('authContext')->getToken() === null) {
+                    echo 'no token';
+                } else {
+                    echo $request->getAttribute('authContext')->getToken()->getID();
+                    echo ':';
+                    echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+                }
             }
-        });
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'bad'
         ]));
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('no token', (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame('no token', (string)$response->getBody());
     }
 
     public function testDeleteToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
+        $http = $this->getCore(new HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $request->getAttribute('authContext')->close();
-            echo 'closed';
-        });
-
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->close();
+                echo 'closed';
+            }
+        );
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'bad'
         ]));
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('closed', (string)$response->getBody());
+        self::assertEmpty($response->getHeader('X-Auth-Token'));
+        self::assertSame('closed', (string)$response->getBody());
     }
 
     public function testCommitToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\HeaderTransport());
+        $http = $this->getCore(new HeaderTransport());
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $request->getAttribute('authContext')->start(
-                new TestToken('new-token', ['ok' => 1])
-            );
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->start(
+                    new TestToken('new-token', ['ok' => 1])
+                );
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
 
-        $this->assertSame(['new-token'], $response->getHeader('X-Auth-Token'));
+        self::assertSame(['new-token'], $response->getHeader('X-Auth-Token'));
     }
 
     protected function getCore(HttpTransportInterface $transport): Http

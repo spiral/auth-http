@@ -30,10 +30,10 @@ interface HttpTransportInterface
     /**
      * Commit (write) token to the outgoing response.
      *
-     * @param Request            $request
-     * @param Response           $response
-     * @param string             $tokenID
-     * @param \DateTimeInterface $expiresAt
+     * @param Request                 $request
+     * @param Response                $response
+     * @param string                  $tokenID
+     * @param \DateTimeInterface|null $expiresAt
      * @return Response
      */
     public function commitToken(

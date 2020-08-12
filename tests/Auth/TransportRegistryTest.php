@@ -23,8 +23,8 @@ class TransportRegistryTest extends TestCase
         $t = new TransportRegistry();
         $t->setTransport('cookie', new CookieTransport('auth-token'));
 
-        $this->assertCount(1, $t->getTransports());
-        $this->assertInstanceOf(CookieTransport::class, $t->getTransport('cookie'));
+        self::assertCount(1, $t->getTransports());
+        self::assertInstanceOf(CookieTransport::class, $t->getTransport('cookie'));
     }
 
     public function testGetException(): void
