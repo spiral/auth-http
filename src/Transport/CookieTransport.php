@@ -3,8 +3,9 @@
 /**
  * Spiral Framework.
  *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
+ * @license MIT
+ * @author  Anton Titov (Wolfy-J)
+ * @author  Valentin V (vvval)
  */
 
 declare(strict_types=1);
@@ -28,14 +29,40 @@ final class CookieTransport implements HttpTransportInterface
     /** @var string */
     private $basePath;
 
+    /** @var string|null */
+    private $domain;
+
+    /** @var bool */
+    private $secure;
+
+    /** @var bool */
+    private $httpOnly;
+
+    /** @var string|null */
+    private $sameSite;
+
     /**
-     * @param string $cookie
-     * @param string $basePath
+     * @param string      $cookie
+     * @param string      $basePath
+     * @param string|null $domain
+     * @param bool        $secure
+     * @param bool        $httpOnly
+     * @param string|null $sameSite
      */
-    public function __construct(string $cookie, string $basePath = '/')
-    {
+    public function __construct(
+        string $cookie,
+        string $basePath = '/',
+        ?string $domain = null,
+        bool $secure = false,
+        bool $httpOnly = true,
+        ?string $sameSite = null
+    ) {
         $this->cookie = $cookie;
         $this->basePath = $basePath;
+        $this->domain = $domain;
+        $this->secure = $secure;
+        $this->httpOnly = $httpOnly;
+        $this->sameSite = $sameSite;
     }
 
     /**
@@ -44,11 +71,7 @@ final class CookieTransport implements HttpTransportInterface
     public function fetchToken(Request $request): ?string
     {
         $cookies = $request->getCookieParams();
-        if (isset($cookies[$this->cookie])) {
-            return $cookies[$this->cookie];
-        }
-
-        return null;
+        return $cookies[$this->cookie] ?? null;
     }
 
     /**
@@ -65,14 +88,32 @@ final class CookieTransport implements HttpTransportInterface
         if ($cookieQueue === null) {
             return $response->withAddedHeader(
                 'Set-Cookie',
-                Cookie::create($this->cookie, $tokenID, $this->getLifetime($expiresAt), $this->basePath)->createHeader()
+                Cookie::create(
+                    $this->cookie,
+                    $tokenID,
+                    $this->getLifetime($expiresAt),
+                    $this->basePath,
+                    $this->domain,
+                    $this->secure,
+                    $this->httpOnly,
+                    $this->sameSite
+                )->createHeader()
             );
         }
 
         if ($tokenID === null) {
             $cookieQueue->delete($this->cookie);
         } else {
-            $cookieQueue->set($this->cookie, $tokenID, $this->getLifetime($expiresAt), $this->basePath);
+            $cookieQueue->set(
+                $this->cookie,
+                $tokenID,
+                $this->getLifetime($expiresAt),
+                $this->basePath,
+                $this->domain,
+                $this->secure,
+                $this->httpOnly,
+                $this->sameSite
+            );
         }
 
         return $response;

@@ -16,7 +16,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Spiral\Auth\HttpTransportInterface;
 use Spiral\Auth\Middleware\AuthMiddleware;
+use Spiral\Auth\Transport\CookieTransport;
 use Spiral\Auth\TransportRegistry;
+use Spiral\Cookies\Cookie\SameSite;
 use Spiral\Core\Container;
 use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Http;
@@ -35,106 +37,168 @@ class CookieTransportTest extends TestCase
 
     public function testCookieToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\CookieTransport('auth-token'));
+        $http = $this->getCore(new CookieTransport('auth-token'));
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            if ($request->getAttribute('authContext')->getToken() === null) {
-                echo 'no token';
-            } else {
-                echo $request->getAttribute('authContext')->getToken()->getID();
-                echo ':';
-                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                if ($request->getAttribute('authContext')->getToken() === null) {
+                    echo 'no token';
+                } else {
+                    echo $request->getAttribute('authContext')->getToken()->getID();
+                    echo ':';
+                    echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+                }
             }
-        });
+        );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [], [
-            'auth-token' => 'good-token'
-        ]));
+        $response = $http->handle(
+            new ServerRequest(
+                [],
+                [],
+                null,
+                'GET',
+                'php://input',
+                [],
+                [
+                      'auth-token' => 'good-token'
+                  ]
+            )
+        );
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
     }
 
     public function testBadCookieToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\CookieTransport('auth-token'));
+        $http = $this->getCore(new CookieTransport('auth-token'));
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            if ($request->getAttribute('authContext')->getToken() === null) {
-                echo 'no token';
-            } else {
-                echo $request->getAttribute('authContext')->getToken()->getID();
-                echo ':';
-                echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                if ($request->getAttribute('authContext')->getToken() === null) {
+                    echo 'no token';
+                } else {
+                    echo $request->getAttribute('authContext')->getToken()->getID();
+                    echo ':';
+                    echo json_encode($request->getAttribute('authContext')->getToken()->getPayload());
+                }
             }
-        });
+        );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [], [
-            'auth-token' => 'bad'
-        ]));
+        $response = $http->handle(
+            new ServerRequest(
+                [],
+                [],
+                null,
+                'GET',
+                'php://input',
+                [],
+                [
+                      'auth-token' => 'bad'
+                  ]
+            )
+        );
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('no token', (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame('no token', (string)$response->getBody());
     }
 
     public function testDeleteToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\CookieTransport('auth-token'));
+        $http = $this->getCore(new CookieTransport('auth-token'));
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $request->getAttribute('authContext')->close();
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->close();
 
-            echo 'closed';
-        });
+                echo 'closed';
+            }
+        );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [], [
-            'auth-token' => 'good-token'
-        ]));
+        $response = $http->handle(
+            new ServerRequest(
+                [],
+                [],
+                null,
+                'GET',
+                'php://input',
+                [],
+                [
+                      'auth-token' => 'good-token'
+                  ]
+            )
+        );
 
-        $this->assertSame(['auth-token=; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
-        $this->assertSame('closed', (string)$response->getBody());
+        self::assertSame(['auth-token=; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
+        self::assertSame('closed', (string)$response->getBody());
     }
 
     public function testCommitToken(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\CookieTransport('auth-token'));
+        $http = $this->getCore(new CookieTransport('auth-token'));
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $request->getAttribute('authContext')->start(
-                new TestToken('new-token', ['ok' => 1])
-            );
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->start(
+                    new TestToken('new-token', ['ok' => 1])
+                );
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
 
-        $this->assertSame(['auth-token=new-token; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
+        self::assertSame(['auth-token=new-token; Path=/; HttpOnly'], $response->getHeader('Set-Cookie'));
+    }
+
+    public function testCommitTokenOtherParams(): void
+    {
+        $http = $this->getCore(
+            new CookieTransport('auth-token', '/', 'localhost', true, false, SameSite::NONE)
+        );
+
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->start(
+                    new TestToken('new-token', ['ok' => 1])
+                );
+            }
+        );
+
+        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
+
+        self::assertSame(
+            ['auth-token=new-token; Path=/; Domain=localhost; Secure; SameSite=None'],
+            $response->getHeader('Set-Cookie')
+        );
     }
 
     public function testCommitTokenLifetime(): void
     {
-        $http = $this->getCore(new \Spiral\Auth\Transport\CookieTransport('auth-token'));
+        $http = $this->getCore(new CookieTransport('auth-token'));
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $request->getAttribute('authContext')->start(
-                new TestToken('new-token', ['ok' => 1], (new \DateTime('now'))->modify('+1 hour'))
-            );
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $request->getAttribute('authContext')->start(
+                    new TestToken('new-token', ['ok' => 1], (new \DateTime('now'))->modify('+1 hour'))
+                );
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
 
         $cookie = explode('; ', $response->getHeader('Set-Cookie')[0]);
 
-        $this->assertSame(
+        self::assertSame(
             'auth-token=new-token',
             $cookie[0]
         );
 
-        $this->assertSame(
+        self::assertSame(
             'Expires=' . gmdate(DATE_COOKIE, time() + 3600),
             $cookie[1]
         );
 
-        $this->assertSame(
+        self::assertSame(
             'Max-Age=3600',
             $cookie[2]
         );
@@ -142,13 +206,15 @@ class CookieTransportTest extends TestCase
 
     protected function getCore(HttpTransportInterface $transport): Http
     {
-        $config = new HttpConfig([
-            'basePath'   => '/',
-            'headers'    => [
-                'Content-Type' => 'text/html; charset=UTF-8'
-            ],
-            'middleware' => [],
-        ]);
+        $config = new HttpConfig(
+            [
+                'basePath'   => '/',
+                'headers'    => [
+                    'Content-Type' => 'text/html; charset=UTF-8'
+                ],
+                'middleware' => [],
+            ]
+        );
 
         $http = new Http(
             $config,
