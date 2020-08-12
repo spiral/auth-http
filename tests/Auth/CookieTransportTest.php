@@ -59,9 +59,7 @@ class CookieTransportTest extends TestCase
                 'GET',
                 'php://input',
                 [],
-                [
-                      'auth-token' => 'good-token'
-                  ]
+                ['auth-token' => 'good-token']
             )
         );
 
@@ -93,9 +91,7 @@ class CookieTransportTest extends TestCase
                 'GET',
                 'php://input',
                 [],
-                [
-                      'auth-token' => 'bad'
-                  ]
+                ['auth-token' => 'bad']
             )
         );
 
@@ -123,9 +119,7 @@ class CookieTransportTest extends TestCase
                 'GET',
                 'php://input',
                 [],
-                [
-                      'auth-token' => 'good-token'
-                  ]
+                ['auth-token' => 'good-token']
             )
         );
 
