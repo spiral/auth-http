@@ -45,16 +45,18 @@ class AuthMiddlewareTest extends TestCase
             )
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            $response->getBody()->write(
-                get_class($request->getAttribute('authContext'))
-            );
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                $response->getBody()->write(
+                    get_class($request->getAttribute('authContext'))
+                );
+            }
+        );
 
         $response = $http->handle(new ServerRequest());
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame(AuthContext::class, (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame(AuthContext::class, (string)$response->getBody());
     }
 
     public function testNoToken(): void
@@ -69,16 +71,18 @@ class AuthMiddlewareTest extends TestCase
             )
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            if ($request->getAttribute('authContext')->getToken() === null) {
-                echo 'no token';
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                if ($request->getAttribute('authContext')->getToken() === null) {
+                    echo 'no token';
+                }
             }
-        });
+        );
 
         $response = $http->handle(new ServerRequest());
 
-        $this->assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        $this->assertSame('no token', (string)$response->getBody());
+        self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
+        self::assertSame('no token', (string)$response->getBody());
     }
 
     protected function getCore(array $middleware = []): Http

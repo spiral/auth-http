@@ -74,7 +74,7 @@ final class AuthMiddleware implements MiddlewareInterface
 
         $response = $this->scope->runScope(
             [AuthContextInterface::class => $authContext],
-            function () use ($request, $handler, $authContext) {
+            static function () use ($request, $handler, $authContext) {
                 return $handler->handle($request->withAttribute(self::ATTRIBUTE, $authContext));
             }
         );
@@ -91,7 +91,7 @@ final class AuthMiddleware implements MiddlewareInterface
     {
         foreach ($this->transportRegistry->getTransports() as $name => $transport) {
             $tokenID = $transport->fetchToken($request);
-            if ($tokenID == null) {
+            if ($tokenID === null) {
                 continue;
             }
 

@@ -20,6 +20,7 @@ use Spiral\Auth\Middleware\AuthMiddleware;
 use Spiral\Auth\Middleware\Firewall\AbstractFirewall;
 use Spiral\Auth\Middleware\Firewall\ExceptionFirewall;
 use Spiral\Auth\Middleware\Firewall\OverwriteFirewall;
+use Spiral\Auth\Transport\HeaderTransport;
 use Spiral\Auth\TransportRegistry;
 use Spiral\Core\Container;
 use Spiral\Http\Config\HttpConfig;
@@ -42,110 +43,122 @@ class FirewallTest extends TestCase
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException()),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo 'OK';
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo 'OK';
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'ok'
         ]));
 
-        $this->assertSame('OK', (string)$response->getBody());
+        self::assertSame('OK', (string)$response->getBody());
     }
 
     public function testNoActorException(): void
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException('no user')),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo 'OK';
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo 'OK';
+            }
+        );
 
         $this->expectException(AuthException::class);
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'no-actor'
         ]));
 
-        $this->assertSame('OK', (string)$response->getBody());
+        self::assertSame('OK', (string)$response->getBody());
     }
 
     public function testBadTokenException(): void
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException('no user')),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo 'OK';
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo 'OK';
+            }
+        );
 
         $this->expectException(AuthException::class);
         $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
             'X-Auth-Token' => 'bad'
         ]));
 
-        $this->assertSame('OK', (string)$response->getBody());
+        self::assertSame('OK', (string)$response->getBody());
     }
 
     public function testOverwriteOK(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo $request->getUri();
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo $request->getUri();
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], new Uri('/admin'), 'GET', 'php://input', [
             'X-Auth-Token' => 'ok'
         ]));
 
-        $this->assertSame('/admin', (string)$response->getBody());
+        self::assertSame('/admin', (string)$response->getBody());
     }
 
     public function testNoActorOverwrite(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo $request->getUri();
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo $request->getUri();
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], new Uri('/admin'), 'GET', 'php://input', [
             'X-Auth-Token' => 'no-actor'
         ]));
 
-        $this->assertSame('/login', (string)$response->getBody());
+        self::assertSame('/login', (string)$response->getBody());
     }
 
     public function testBadTokenOverwrite(): void
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new \Spiral\Auth\Transport\HeaderTransport()
+            new HeaderTransport()
         );
 
-        $http->setHandler(function (ServerRequestInterface $request, ResponseInterface $response): void {
-            echo $request->getUri();
-        });
+        $http->setHandler(
+            static function (ServerRequestInterface $request, ResponseInterface $response): void {
+                echo $request->getUri();
+            }
+        );
 
         $response = $http->handle(new ServerRequest([], [], new Uri('/admin'), 'GET', 'php://input', [
             'X-Auth-Token' => 'bad'
         ]));
 
-        $this->assertSame('/login', (string)$response->getBody());
+        self::assertSame('/login', (string)$response->getBody());
     }
 
     protected function getCore(AbstractFirewall $firewall, HttpTransportInterface $transport): Http
