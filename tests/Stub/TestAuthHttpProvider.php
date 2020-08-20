@@ -14,11 +14,11 @@ namespace Spiral\Tests\Auth\Stub;
 use Spiral\Auth\ActorProviderInterface;
 use Spiral\Auth\TokenInterface;
 
-class TestProvider implements ActorProviderInterface
+class TestAuthHttpProvider implements ActorProviderInterface
 {
     public function getActor(TokenInterface $token): ?object
     {
-        if ($token->getPayload()['ok'] ?? false) {
+        if ($token->getID() === 'ok') {
             return new \stdClass();
         }
 
