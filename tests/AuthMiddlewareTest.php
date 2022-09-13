@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
@@ -22,7 +15,7 @@ use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Http;
 use Spiral\Http\Pipeline;
 use Spiral\Tests\Auth\Diactoros\ResponseFactory;
-use Laminas\Diactoros\ServerRequest;
+use Nyholm\Psr7\ServerRequest;
 use Spiral\Tests\Auth\Stub\TestAuthHttpProvider;
 use Spiral\Tests\Auth\Stub\TestAuthHttpStorage;
 
@@ -55,7 +48,7 @@ class AuthMiddlewareTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest());
+        $response = $http->handle(new ServerRequest('GET', ''));
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         self::assertSame(AuthContext::class, (string)$response->getBody());
@@ -81,7 +74,7 @@ class AuthMiddlewareTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest());
+        $response = $http->handle(new ServerRequest('GET', ''));
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         self::assertSame('no token', (string)$response->getBody());

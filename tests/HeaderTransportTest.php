@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Spiral Framework.
- *
- * @license   MIT
- * @author    Anton Titov (Wolfy-J)
- */
-
 declare(strict_types=1);
 
 namespace Spiral\Tests\Auth;
@@ -23,7 +16,7 @@ use Spiral\Http\Config\HttpConfig;
 use Spiral\Http\Http;
 use Spiral\Http\Pipeline;
 use Spiral\Tests\Auth\Diactoros\ResponseFactory;
-use Laminas\Diactoros\ServerRequest;
+use Nyholm\Psr7\ServerRequest;
 use Spiral\Tests\Auth\Stub\TestAuthHttpProvider;
 use Spiral\Tests\Auth\Stub\TestAuthHttpStorage;
 use Spiral\Tests\Auth\Stub\TestAuthHttpToken;
@@ -53,9 +46,9 @@ class HeaderTransportTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
-            'X-Auth-Token' => 'good-token'
-        ]));
+        $response = $http->handle(
+            new ServerRequest('GET', '', ['X-Auth-Token' => 'good-token'], 'php://input')
+        );
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         self::assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
@@ -77,9 +70,9 @@ class HeaderTransportTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
-            'Authorization' => 'Bearer good-token'
-        ]));
+        $response = $http->handle(
+            new ServerRequest('GET', '', ['Authorization' => 'Bearer good-token'], 'php://input')
+        );
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         self::assertSame('good-token:{"id":"good-token"}', (string)$response->getBody());
@@ -100,9 +93,9 @@ class HeaderTransportTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
-            'X-Auth-Token' => 'bad'
-        ]));
+        $response = $http->handle(
+            new ServerRequest('GET', '', ['X-Auth-Token' => 'bad'], 'php://input')
+        );
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
         self::assertSame('no token', (string)$response->getBody());
@@ -118,9 +111,9 @@ class HeaderTransportTest extends TestCase
                 echo 'closed';
             }
         );
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', [
-            'X-Auth-Token' => 'bad'
-        ]));
+        $response = $http->handle(
+            new ServerRequest('GET', '',['X-Auth-Token' => 'bad'], 'php://input')
+        );
 
         self::assertEmpty($response->getHeader('X-Auth-Token'));
         self::assertSame('closed', (string)$response->getBody());
@@ -138,7 +131,7 @@ class HeaderTransportTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
+        $response = $http->handle(new ServerRequest('GET', '', body: 'php://input'));
 
         self::assertSame(['new-token'], $response->getHeader('X-Auth-Token'));
     }
@@ -155,7 +148,7 @@ class HeaderTransportTest extends TestCase
             }
         );
 
-        $response = $http->handle(new ServerRequest([], [], null, 'GET', 'php://input', []));
+        $response = $http->handle(new ServerRequest('GET', '', body: 'php://input'));
 
         self::assertSame(['Bearer new-token'], $response->getHeader('Authorization'));
     }
