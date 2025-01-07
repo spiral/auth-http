@@ -33,6 +33,6 @@ final class OverwriteFirewallTest extends BaseFirewallTestCase
             new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input')
         );
 
-        self::assertSame($token === 'ok' ? '/admin' : '/login', (string) $response->getBody());
+        $this->assertSame($token === 'ok' ? '/admin' : '/login', (string) $response->getBody());
     }
 }

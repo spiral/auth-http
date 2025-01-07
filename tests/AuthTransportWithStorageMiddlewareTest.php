@@ -33,10 +33,10 @@ final class AuthTransportWithStorageMiddlewareTest extends BaseTestCase
         $request
             ->expects($this->exactly(2))
             ->method('withAttribute')
-            ->willReturnCallback(function (string $key, string $value) use ($matcher, $tokenStorage): void {
+            ->willReturnCallback(function (string $key, string $value) use ($matcher, $tokenStorage) {
                 match ($matcher->numberOfInvocations()) {
-                    1 =>  self::assertInstanceOf(AuthContextInterface::class, $value),
-                    2 =>  self::assertSame($tokenStorage, $value),
+                    1 =>  $this->assertInstanceOf(AuthContextInterface::class, $value),
+                    2 =>  $this->assertSame($tokenStorage, $value),
                 };
             })
             ->willReturnSelf();
@@ -71,6 +71,9 @@ final class AuthTransportWithStorageMiddlewareTest extends BaseTestCase
         $handler = $this->createMock(RequestHandlerInterface::class);
         $handler->expects($this->once())->method('handle')->with($request)->willReturn($response);
 
-        self::assertSame($response, $middleware->process($request, $handler));
+        $this->assertSame(
+            $response,
+            $middleware->process($request, $handler)
+        );
     }
 }
