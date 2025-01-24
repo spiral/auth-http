@@ -19,19 +19,19 @@ final class ExceptionFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException()),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo 'OK';
-            }
+            },
         );
 
         $response = $http->handle(new ServerRequest('GET', '', ['X-Auth-Token' => $token], 'php://input'));
 
-        $this->assertSame('OK', (string) $response->getBody());
+        self::assertSame('OK', (string) $response->getBody());
     }
 
     #[DataProvider('failTokensDataProvider')]
@@ -39,18 +39,18 @@ final class ExceptionFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new ExceptionFirewall(new AuthException('no user')),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo 'OK';
-            }
+            },
         );
 
         $this->expectException(AuthException::class);
         $response = $http->handle(new ServerRequest('GET', '', ['X-Auth-Token' => $token], 'php://input'));
 
-        $this->assertSame('OK', (string) $response->getBody());
+        self::assertSame('OK', (string) $response->getBody());
     }
 }

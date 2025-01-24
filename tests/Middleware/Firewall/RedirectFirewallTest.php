@@ -20,21 +20,21 @@ final class RedirectFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new RedirectFirewall(new Uri('/login'), new Psr17Factory()),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo 'success login';
-            }
+            },
         );
 
         $response = $http->handle(
-            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input')
+            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input'),
         );
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('success login', (string)$response->getBody());
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('success login', (string) $response->getBody());
     }
 
     #[DataProvider('failTokensDataProvider')]
@@ -42,22 +42,22 @@ final class RedirectFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new RedirectFirewall(new Uri('/login'), new Psr17Factory()),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo 'success login';
-            }
+            },
         );
 
         $response = $http->handle(
-            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input')
+            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input'),
         );
 
-        $this->assertSame(302, $response->getStatusCode());
-        $this->assertSame(['Location' => ['/login']], $response->getHeaders());
-        $this->assertSame('', (string) $response->getBody());
+        self::assertSame(302, $response->getStatusCode());
+        self::assertSame(['Location' => ['/login']], $response->getHeaders());
+        self::assertSame('', (string) $response->getBody());
     }
 
     #[DataProvider('failTokensDataProvider')]
@@ -65,21 +65,21 @@ final class RedirectFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new RedirectFirewall(new Uri('/login'), new Psr17Factory(), 301),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo 'success login';
-            }
+            },
         );
 
         $response = $http->handle(
-            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input')
+            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input'),
         );
 
-        $this->assertSame(301, $response->getStatusCode());
-        $this->assertSame(['Location' => ['/login']], $response->getHeaders());
-        $this->assertSame('', (string) $response->getBody());
+        self::assertSame(301, $response->getStatusCode());
+        self::assertSame(['Location' => ['/login']], $response->getHeaders());
+        self::assertSame('', (string) $response->getBody());
     }
 }
