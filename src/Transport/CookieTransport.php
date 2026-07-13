@@ -16,13 +16,14 @@ use Spiral\Cookies\CookieQueue;
 final class CookieTransport implements HttpTransportInterface
 {
     public function __construct(
-        private readonly string $cookie,
+        private string $cookie,
         private readonly string $basePath = '/',
         private readonly ?string $domain = null,
         private readonly bool $secure = false,
         private readonly bool $httpOnly = true,
-        private readonly ?string $sameSite = null,
-    ) {}
+        private readonly ?string $sameSite = null
+    ) {
+    }
 
     public function fetchToken(Request $request): ?string
     {
@@ -33,8 +34,8 @@ final class CookieTransport implements HttpTransportInterface
     public function commitToken(
         Request $request,
         Response $response,
-        ?string $tokenID = null,
-        ?\DateTimeInterface $expiresAt = null,
+        string $tokenID = null,
+        \DateTimeInterface $expiresAt = null
     ): Response {
         /** @var CookieQueue $cookieQueue */
         $cookieQueue = $request->getAttribute(CookieQueue::ATTRIBUTE);
@@ -49,8 +50,8 @@ final class CookieTransport implements HttpTransportInterface
                     $this->domain,
                     $this->secure,
                     $this->httpOnly,
-                    $this->sameSite,
-                )->createHeader(),
+                    $this->sameSite
+                )->createHeader()
             );
         }
 
@@ -65,7 +66,7 @@ final class CookieTransport implements HttpTransportInterface
                 $this->domain,
                 $this->secure,
                 $this->httpOnly,
-                $this->sameSite,
+                $this->sameSite
             );
         }
 
@@ -75,18 +76,18 @@ final class CookieTransport implements HttpTransportInterface
     public function removeToken(Request $request, Response $response, string $tokenID): Response
     {
         // reset to null
-        return $this->commitToken($request, $response);
+        return $this->commitToken($request, $response, null, null);
     }
 
     /**
      * @return int<0, max>|null
      */
-    private function getLifetime(?\DateTimeInterface $expiresAt = null): ?int
+    private function getLifetime(\DateTimeInterface $expiresAt = null): ?int
     {
         if ($expiresAt === null) {
             return null;
         }
 
-        return \max($expiresAt->getTimestamp() - \time(), 0);
+        return max($expiresAt->getTimestamp() - time(), 0);
     }
 }

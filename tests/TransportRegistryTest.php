@@ -8,7 +8,7 @@ use Spiral\Auth\Exception\TransportException;
 use Spiral\Auth\Transport\CookieTransport;
 use Spiral\Auth\TransportRegistry;
 
-final class TransportRegistryTest extends BaseTestCase
+class TransportRegistryTest extends BaseTestCase
 {
     public function testGetTransports(): void
     {

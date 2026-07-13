@@ -14,8 +14,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 final class ExceptionFirewall extends AbstractFirewall
 {
     public function __construct(
-        private readonly \Throwable $e,
-    ) {}
+        private readonly \Throwable $e
+    ) {
+    }
 
     /**
      * @throws \Throwable

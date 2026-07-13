@@ -22,6 +22,20 @@ use Spiral\Tests\Auth\Stub\TestAuthHttpStorage;
 
 final class AuthTransportMiddlewareTest extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $transports = new TransportRegistry();
+        $transports->setTransport('cookie', new CookieTransport('/'));
+        $transports->setTransport('header', new HeaderTransport());
+
+        $this->container->bind(TransportRegistry::class, $transports);
+        $this->container->bind(ScopeInterface::class, $this->container);
+        $this->container->bind(ActorProviderInterface::class, new TestAuthHttpProvider());
+        $this->container->bind(TokenStorageInterface::class, new TestAuthHttpStorage());
+    }
+
     public function testCreateMiddlewareWithOneTransport(): void
     {
         $middleware1 = new Autowire(AuthTransportMiddleware::class, ['cookie']);
@@ -35,10 +49,10 @@ final class AuthTransportMiddlewareTest extends BaseTestCase
         /** @var TransportRegistry $registry2 */
         $registry2 = $this->getPrivateProperty('transportRegistry', $auth2);
 
-        self::assertCount(1, $registry->getTransports());
-        self::assertInstanceOf(CookieTransport::class, $registry->getTransport('cookie'));
-        self::assertCount(1, $registry2->getTransports());
-        self::assertInstanceOf(HeaderTransport::class, $registry2->getTransport('header'));
+        $this->assertCount(1, $registry->getTransports());
+        $this->assertInstanceOf(CookieTransport::class, $registry->getTransport('cookie'));
+        $this->assertCount(1, $registry2->getTransports());
+        $this->assertInstanceOf(HeaderTransport::class, $registry2->getTransport('header'));
     }
 
     public function testCloseContextWithAuthContextTransportNull(): void
@@ -48,31 +62,17 @@ final class AuthTransportMiddlewareTest extends BaseTestCase
         $auth = $this->getPrivateProperty('authMiddleware', $middleware->resolve($this->container));
 
         $authContext = $this->createMock(AuthContextInterface::class);
-        $authContext->expects(self::once())->method('getTransport')->willReturn(null);
-        $authContext->expects(self::once())->method('isClosed')->willReturn(false);
-        $authContext->expects(self::exactly(3))->method('getToken')->willReturn(new Token('1', []));
+        $authContext->expects($this->once())->method('getTransport')->willReturn(null);
+        $authContext->expects($this->once())->method('isClosed')->willReturn(false);
+        $authContext->expects($this->exactly(3))->method('getToken')->willReturn(new Token('1', []));
 
         $response = $this->createMock(ResponseInterface::class);
-        $response->expects(self::once())->method('withAddedHeader')->willReturn($response);
+        $response->expects($this->once())->method('withAddedHeader')->willReturn($response);
 
         $request = $this->createMock(ServerRequestInterface::class);
-        $request->expects(self::once())->method('hasHeader')->willReturn(false);
+        $request->expects($this->once())->method('hasHeader')->willReturn(false);
 
         (new \ReflectionMethod($auth, 'closeContext'))->invoke($auth, $request, $response, $authContext);
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $transports = new TransportRegistry();
-        $transports->setTransport('cookie', new CookieTransport('/'));
-        $transports->setTransport('header', new HeaderTransport());
-
-        $this->container->bind(TransportRegistry::class, $transports);
-        $this->container->bind(ScopeInterface::class, $this->container);
-        $this->container->bind(ActorProviderInterface::class, new TestAuthHttpProvider());
-        $this->container->bind(TokenStorageInterface::class, new TestAuthHttpStorage());
     }
 
     private function getPrivateProperty(string $property, object $object): mixed

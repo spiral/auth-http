@@ -14,28 +14,23 @@ use Spiral\Auth\AuthContext;
 use Spiral\Auth\AuthContextInterface;
 use Spiral\Auth\TokenStorageInterface;
 use Spiral\Auth\TransportRegistry;
-use Spiral\Core\Attribute\Scope;
 use Spiral\Core\ScopeInterface;
 
 /**
  * Manages auth context scope.
  */
-#[Scope('http')]
 final class AuthMiddleware implements MiddlewareInterface
 {
     public const ATTRIBUTE = 'authContext';
-    public const TOKEN_STORAGE_ATTRIBUTE = 'tokenStorage';
 
-    /**
-     * @param ScopeInterface $scope Deprecated, will be removed in v4.0.
-     */
     public function __construct(
         private readonly ScopeInterface $scope,
         private readonly ActorProviderInterface $actorProvider,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly TransportRegistry $transportRegistry,
-        private readonly ?EventDispatcherInterface $eventDispatcher = null,
-    ) {}
+        private readonly ?EventDispatcherInterface $eventDispatcher = null
+    ) {
+    }
 
     /**
      * @throws \Throwable
@@ -44,10 +39,12 @@ final class AuthMiddleware implements MiddlewareInterface
     {
         $authContext = $this->initContext($request, new AuthContext($this->actorProvider, $this->eventDispatcher));
 
-        $response = $handler->handle(
-            $request
-                ->withAttribute(self::ATTRIBUTE, $authContext)
-                ->withAttribute(self::TOKEN_STORAGE_ATTRIBUTE, $this->tokenStorage),
+        $response = $this->scope->runScope(
+            [
+                AuthContextInterface::class => $authContext,
+                TokenStorageInterface::class => $this->tokenStorage,
+            ],
+            static fn () => $handler->handle($request->withAttribute(self::ATTRIBUTE, $authContext))
         );
 
         return $this->closeContext($request, $response, $authContext);
@@ -88,7 +85,7 @@ final class AuthMiddleware implements MiddlewareInterface
             return $transport->removeToken(
                 $request,
                 $response,
-                $authContext->getToken()->getID(),
+                $authContext->getToken()->getID()
             );
         }
 
@@ -96,7 +93,7 @@ final class AuthMiddleware implements MiddlewareInterface
             $request,
             $response,
             $authContext->getToken()->getID(),
-            $authContext->getToken()->getExpiresAt(),
+            $authContext->getToken()->getExpiresAt()
         );
     }
 }

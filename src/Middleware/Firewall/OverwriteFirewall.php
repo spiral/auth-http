@@ -16,8 +16,9 @@ final class OverwriteFirewall extends AbstractFirewall
 {
     public function __construct(
         private readonly UriInterface $uri,
-        private readonly int $status = 401,
-    ) {}
+        private readonly int $status = 401
+    ) {
+    }
 
     protected function denyAccess(Request $request, RequestHandlerInterface $handler): Response
     {
