@@ -12,15 +12,20 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Spiral\Auth\ActorProviderInterface;
 use Spiral\Auth\TokenStorageProviderInterface;
 use Spiral\Auth\TransportRegistry;
+use Spiral\Core\Attribute\Scope;
 use Spiral\Core\ScopeInterface;
 
 /**
  * Auth by specific transport.
  */
+#[Scope('http')]
 final class AuthTransportWithStorageMiddleware implements MiddlewareInterface
 {
-    private readonly MiddlewareInterface $authMiddleware;
+    private readonly AuthTransportMiddleware $authMiddleware;
 
+    /**
+     * @param ScopeInterface $scope Deprecated, will be removed in v4.0.
+     */
     public function __construct(
         string $transportName,
         ScopeInterface $scope,
@@ -28,7 +33,7 @@ final class AuthTransportWithStorageMiddleware implements MiddlewareInterface
         TokenStorageProviderInterface $tokenStorageProvider,
         TransportRegistry $transportRegistry,
         ?EventDispatcherInterface $eventDispatcher = null,
-        ?string $storage = null
+        ?string $storage = null,
     ) {
         $this->authMiddleware = new AuthTransportMiddleware(
             $transportName,
@@ -36,7 +41,7 @@ final class AuthTransportWithStorageMiddleware implements MiddlewareInterface
             $actorProvider,
             $tokenStorageProvider->getStorage($storage),
             $transportRegistry,
-            $eventDispatcher
+            $eventDispatcher,
         );
     }
 

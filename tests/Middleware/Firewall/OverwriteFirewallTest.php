@@ -20,19 +20,19 @@ final class OverwriteFirewallTest extends BaseFirewallTestCase
     {
         $http = $this->getCore(
             new OverwriteFirewall(new Uri('/login')),
-            new HeaderTransport()
+            new HeaderTransport(),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 echo $request->getUri();
-            }
+            },
         );
 
         $response = $http->handle(
-            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input')
+            new ServerRequest('GET', new Uri('/admin'), ['X-Auth-Token' => $token], 'php://input'),
         );
 
-        $this->assertSame($token === 'ok' ? '/admin' : '/login', (string) $response->getBody());
+        self::assertSame($token === 'ok' ? '/admin' : '/login', (string) $response->getBody());
     }
 }

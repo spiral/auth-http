@@ -18,7 +18,7 @@ use Nyholm\Psr7\ServerRequest;
 use Spiral\Tests\Auth\Stub\TestAuthHttpProvider;
 use Spiral\Tests\Auth\Stub\TestAuthHttpStorage;
 
-class AuthMiddlewareTest extends BaseTestCase
+final class AuthMiddlewareTest extends BaseTestCase
 {
     public function testAttributeRead(): void
     {
@@ -28,22 +28,22 @@ class AuthMiddlewareTest extends BaseTestCase
                 $this->container,
                 new TestAuthHttpProvider(),
                 new TestAuthHttpStorage(),
-                new TransportRegistry()
-            )
+                new TransportRegistry(),
+            ),
         );
 
         $http->setHandler(
             static function (ServerRequestInterface $request, ResponseInterface $response): void {
                 $response->getBody()->write(
-                    get_class($request->getAttribute('authContext'))
+                    $request->getAttribute('authContext')::class,
                 );
-            }
+            },
         );
 
         $response = $http->handle(new ServerRequest('GET', ''));
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        self::assertSame(AuthContext::class, (string)$response->getBody());
+        self::assertSame(AuthContext::class, (string) $response->getBody());
     }
 
     public function testNoToken(): void
@@ -54,8 +54,8 @@ class AuthMiddlewareTest extends BaseTestCase
                 $this->container,
                 new TestAuthHttpProvider(),
                 new TestAuthHttpStorage(),
-                new TransportRegistry()
-            )
+                new TransportRegistry(),
+            ),
         );
 
         $http->setHandler(
@@ -63,13 +63,13 @@ class AuthMiddlewareTest extends BaseTestCase
                 if ($request->getAttribute('authContext')->getToken() === null) {
                     echo 'no token';
                 }
-            }
+            },
         );
 
         $response = $http->handle(new ServerRequest('GET', ''));
 
         self::assertSame(['text/html; charset=UTF-8'], $response->getHeader('Content-Type'));
-        self::assertSame('no token', (string)$response->getBody());
+        self::assertSame('no token', (string) $response->getBody());
     }
 
     protected function getCore(array $middleware = []): Http
@@ -77,7 +77,7 @@ class AuthMiddlewareTest extends BaseTestCase
         $config = new HttpConfig([
             'basePath'   => '/',
             'headers'    => [
-                'Content-Type' => 'text/html; charset=UTF-8'
+                'Content-Type' => 'text/html; charset=UTF-8',
             ],
             'middleware' => $middleware,
         ]);
@@ -86,7 +86,7 @@ class AuthMiddlewareTest extends BaseTestCase
             $config,
             new Pipeline($this->container),
             new ResponseFactory($config),
-            $this->container
+            $this->container,
         );
     }
 }
